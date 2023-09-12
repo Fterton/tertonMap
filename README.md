@@ -20,12 +20,12 @@ If the network is not specified, tertonMap will scan all interfaces (except the 
 \
 The script will run some commands to retrieve informations from the host (such as name, IP addresses, WiFi scan, etc.). \
 Next, the script will scan interfaces. \
-For each interface, the script will perform an Nmap command with --script vuln and an XML output. The XML files are then transformed into HTML files. 
+For each interface, the script will perform an Nmap command with XML output. The XML files are then transformed into HTML files. 
 
 ./tertonMap.sh -z myScan.zip --password --vuln \
 \
 With this options, the script will first prompt you for a password. \
-Then it will do the same as previous sample but all the generated files are packaged into a zip file with the given password and the original files are deleted. 
+Then it will do the same as previous sample but nmap command is run with "--script vuln" option and all the generated files are packaged into a zip file with the given password and the original files are deleted. 
 
 ./tertonMap.sh -n 192.168.1.0/24 -z myScan.zip --password --vuln 
 \
