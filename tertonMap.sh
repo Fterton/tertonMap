@@ -155,6 +155,12 @@ archive_files() {
         echo 
         echo ------------------------------------------
         echo "Updating archive $archive_name..."
+        # echo
+        # echo "archive_name: $archive_name"
+        # echo "file1: $file1"
+        # echo "file2: $file2"
+        # echo "file3: $file3"
+        # echo
         
         if [ -n "$encryption_password" ]; then
             # Add files to zip file whith password
@@ -177,6 +183,36 @@ archive_files() {
         fi
     fi
 }
+
+# Function that perform an arp scan of all private networks on the specified interface
+perform_fast_netdiscover_interface_and_archive(){
+    local netdiscover_interface="$1"
+    local archive_name="$2"
+    local encryption_password="$3"
+
+    netdiscover_file="fast_netdiscover_"$netdiscover_interface".txt"
+
+    sudo rm -f "$netdiscover_file"
+
+    echo 
+    echo ------------------------------------------
+    echo "Running fast netdiscover on interface $netdiscover_interface..."
+    echo "It can take a lot of time..."
+
+    echo ------------------------------------------ >> $netdiscover_file
+    echo "sudo netdiscover -i $netdiscover_interface -f -P" >> $netdiscover_file
+    echo ------------------------------------------ >> $netdiscover_file
+    sudo netdiscover -i $netdiscover_interface -f -P  >> $netdiscover_file
+
+
+    echo
+    echo "End of fast netdiscover on interface $netdiscover_interface..."
+    echo ------------------------------------------
+    echo
+
+    archive_files "$archive_name" "$encryption_password" "$netdiscover_file"
+}
+
 
 
 # Function that perform a netdiscover scan
@@ -224,10 +260,10 @@ perform_nmap_scan() {
     echo 
     if [ "$use_vuln_script" = true ]; then
         echo "Scanning network $network with vuln scripts..."
-        sudo nmap -sV -sC --script vuln "$network" -oX "$output_file"
+        sudo nmap -sV -sC -O --script vuln "$network" -oX "$output_file"
     else
         echo "Scanning network $network..."
-        sudo nmap -sV -sC "$network" -oX "$output_file"
+        sudo nmap -sV -sC -O "$network" -oX "$output_file"
     fi
 
     echo
@@ -276,6 +312,7 @@ show_help() {
     echo "Options:"
     echo "  -n <network>         Specify the network to scan (e.g., 192.168.1.1 or 192.168.1.0/24)"
     echo "  -z <zip>             Specify the name of the zip to create"
+    echo "  -d <interface>     Specify an interface to run netdiscovery -i interface -f -P /!\ It can take a lot of time."
     echo "  --h[elp]             Show this help message"
     echo "  --vuln               Use NSE vuln scripts"
     echo "  --password           Set a password for the zip file"
@@ -292,13 +329,16 @@ encryption_password=""
 hostinfos_only=false
 
 # Analyze command options
-while getopts ":z:n:-:-:-:" opt; do
+while getopts ":z:n:d:-:-:-:" opt; do
     case $opt in
         n)
             network_to_scan="$OPTARG"
             ;;
         z)
             archive_name="$OPTARG"
+            ;;
+        d)
+            netdiscover_interface="$OPTARG"
             ;;
         -)
             case "${OPTARG}" in
@@ -360,7 +400,12 @@ if [ -n "$archive_name" ]; then
     fi
 fi
 
+# Retrieve results of some information about the current host (ips, public ip, wifi SSIDs... ) in a file and archive them 
 perform_host_infos_and_archive "$archive_name" "$encryption_password"
+
+if [ -n "$netdiscover_interface" ]; then
+    perform_fast_netdiscover_interface_and_archive "$netdiscover_interface" "$archive_name" "$encryption_password"
+fi
 
 if [ "$hostinfos_only" = false ]; then
     # If network_to_scan is empty, scan interfaces networks (except loopback)
