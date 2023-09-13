@@ -312,7 +312,7 @@ show_help() {
     echo "Options:"
     echo "  -n <network>         Specify the network to scan (e.g., 192.168.1.1 or 192.168.1.0/24)"
     echo "  -z <zip>             Specify the name of the zip to create"
-    echo "  -d <interface>     Specify an interface to run netdiscovery -i interface -f -P /!\ It can take a lot of time."
+    echo "  -d <interface>       Specify an interface to run netdiscovery -i interface -f -P /!\ It can take a lot of time."
     echo "  --h[elp]             Show this help message"
     echo "  --vuln               Use NSE vuln scripts"
     echo "  --password           Set a password for the zip file"
