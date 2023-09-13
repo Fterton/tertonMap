@@ -1,6 +1,6 @@
 # tertonMap
 Shell script that use common commands to scan networks (used on Kali)
-Default nmap command used is : nmap -sV -sC "$network" 
+Default nmap command used is : nmap -sV -sC -O "$network" 
 
 ## dependances
 This script uses the following commands :
