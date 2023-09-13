@@ -2,6 +2,10 @@
 Shell script that use common commands to scan networks (used on Kali)
 Default nmap command used is : nmap -sV -sC "$network" 
 
+## dependances
+This script uses the following commands :
+uname, ip, wget, hciconfig, hcitool, iwconfig, iwlist, mtr, zip, netdiscover, nmap (+ vuln scripts), xsltproc, ipcalc
+
 ## usage
 Usage: ./tertonMap.sh [options] \
 Options: \
