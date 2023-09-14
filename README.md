@@ -6,6 +6,10 @@ Default nmap command used is : nmap -sV -sC -O "$network"
 This script uses the following commands :
 uname, ip, wget, hciconfig, hcitool, iwconfig, iwlist, mtr, zip, netdiscover, nmap (+ vuln scripts), xsltproc, ipcalc
 
+On a Kali, before running the script, you need to install ipcalc : 
+sudo apt-get update
+sudo apt-get install -y ipcalc 
+
 ## usage
 Usage: ./tertonMap.sh [options] \
 Options: \
