@@ -18,6 +18,8 @@ perform_host_infos_and_archive() {
     fi
     echo host_infos_file : $host_infos_file
     echo
+    start_date=$(date "+%Y-%m-%d %H:%M:%S")
+    echo "Current date time : $start_date"
     echo ------------------------------------------
     echo 
 
@@ -77,11 +79,18 @@ perform_host_infos_and_archive() {
     mtr -r -c 1  8.8.8.8  >> $host_infos_file
     echo >> $host_infos_file
 
+    echo 
+    cat $host_infos_file
+    echo 
+
     archive_files "$archive_name" "$encryption_password" "$host_infos_file" 
 
     echo 
     echo ------------------------------------------
     echo
+    end_date=$(date "+%Y-%m-%d %H:%M:%S")
+    echo "Current date time : $end_date"
+    display_duration "$start_date" "$end_date"
     echo END OF RETRIEVING HOST INFORMATIONS
     echo
     echo ------------------------------------------
@@ -198,15 +207,20 @@ perform_fast_netdiscover_interface_and_archive(){
     echo ------------------------------------------
     echo "Running fast netdiscover on interface $netdiscover_interface..."
     echo "It can take a lot of time..."
+    start_date_date=$(date "+%Y-%m-%d %H:%M:%S")
+    echo "Current date time : $start_date"
 
     echo ------------------------------------------ >> $netdiscover_file
     echo "sudo netdiscover -i $netdiscover_interface -f -P" >> $netdiscover_file
     echo ------------------------------------------ >> $netdiscover_file
     sudo netdiscover -i $netdiscover_interface -f -P  >> $netdiscover_file
-
+    cat $netdiscover_file
 
     echo
     echo "End of fast netdiscover on interface $netdiscover_interface..."
+    end_date=$(date "+%Y-%m-%d %H:%M:%S")
+    echo "Current date time : $end_date"
+    display_duration "$start_date" "$end_date"
     echo ------------------------------------------
     echo
 
@@ -226,24 +240,29 @@ perform_netdiscover_scan() {
     echo 
     echo ------------------------------------------
     echo "Running netdiscover..."
+    start_date=$(date "+%Y-%m-%d %H:%M:%S")
+    echo "Current date time : $start_date"
     echo 
 
     # Note - Fast netdiscover without known range : sudo netdiscover -i wlan0 -f
 
     if [ -n "$interface" ]; then
         echo ------------------------------------------ >> $netdiscover_file
-        echo "sudo netdiscover -s 3 -c 3 -i $interface -r $network -P " >> $netdiscover_file
+        echo "sudo netdiscover -s 5 -c 5 -i $interface -r $network -P " >> $netdiscover_file
         echo ------------------------------------------ >> $netdiscover_file
-        sudo netdiscover -i $interface -r $network -P  >> $netdiscover_file
+        sudo netdiscover -s 5 -c 5 -i $interface -r $network -P  >> $netdiscover_file
     else
         echo ------------------------------------------ >> $netdiscover_file
-        echo "sudo netdiscover -s 3 -c 3 -r $network -P " >> $netdiscover_file
+        echo "sudo netdiscover -s 5 -c 5 -r $network -P " >> $netdiscover_file
         echo ------------------------------------------ >> $netdiscover_file
-        sudo netdiscover -r $network -P  >> $netdiscover_file
+        sudo netdiscover -s 5 -c 5 -r $network -P  >> $netdiscover_file
     fi
-
+    cat $netdiscover_file
     echo
     echo "End of running netdiscover..."
+    end_date=$(date "+%Y-%m-%d %H:%M:%S")
+    echo "Current date time : $end_date"
+    display_duration "$start_date" "$end_date"
     echo ------------------------------------------
     echo
 
@@ -257,6 +276,9 @@ perform_nmap_scan() {
 
     echo 
     echo ------------------------------------------
+    echo NMAP SCAN
+    start_date=$(date "+%Y-%m-%d %H:%M:%S")
+    echo "Current date time : $start_date"
     echo 
     if [ "$use_vuln_script" = true ]; then
         echo "Scanning network $network with vuln scripts..."
@@ -268,6 +290,9 @@ perform_nmap_scan() {
 
     echo
     echo "Scan of $network completed. Results saved in $output_file"
+    end_date=$(date "+%Y-%m-%d %H:%M:%S")
+    echo "Current date time : $end_date"
+    display_duration "$start_date" "$end_date"
     echo ------------------------------------------
     echo
 }
@@ -288,6 +313,29 @@ generate_html_report() {
     echo "HTML report saved in $html_file"
     echo ------------------------------------------
     echo 
+}
+
+
+
+# Function to print duration between 2 dates
+display_duration() {
+    local date_debut="$1"
+    local date_fin="$2"
+
+    # Convertir les dates en timestamps (en secondes depuis l'époque Unix)
+    timestamp_debut=$(date -d "$date_debut" +%s)
+    timestamp_fin=$(date -d "$date_fin" +%s)
+
+    # Calculer la durée en secondes
+    duree_seconde=$((timestamp_fin - timestamp_debut))
+
+    # Calculer les heures, minutes et secondes
+    heures=$((duree_seconde / 3600))
+    minutes=$(( (duree_seconde % 3600) / 60 ))
+    secondes=$((duree_seconde % 60))
+
+    # Afficher la durée
+    echo -e "\e[31mDurée : $heures heures, $minutes minutes, $secondes secondes\e[0m"
 }
 
 # Function to encryp results  
@@ -379,6 +427,12 @@ while getopts ":z:n:d:-:-:-:" opt; do
     esac
 done
 
+echo "########################################################################"
+echo "# STARTING                                                             #"
+gen_start_date=$(date "+%Y-%m-%d %H:%M:%S")
+echo "# Current date time : $gen_start_date"
+echo 
+
 if [ -n "$archive_name" ]; then
     # Check if the file exists
     if [ -f "$archive_name" ]; then
@@ -445,3 +499,10 @@ if [ "$hostinfos_only" = false ]; then
         perform_scan_and_archive "$network_to_scan" "$use_vuln_script" "$archive_name" "$encryption_password"
     fi
 fi
+
+echo 
+gen_end_date=$(date "+%Y-%m-%d %H:%M:%S")
+echo "# Current date time : $gen_end_date"
+display_duration "$gen_start_date" "$gen_end_date"
+echo "# FINISH                                                               #"
+echo "########################################################################"
